@@ -1,0 +1,13 @@
+[project]
+name = "censo-raia"
+version = "0.1.0"
+description = "Download public RAIA animal census data"
+readme = "README.md"
+authors = [
+    { name = "David Gasquez", email = "davidgasquez@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "httpx>=0.28.1",
+    "ijson>=3.2.3",
+]
