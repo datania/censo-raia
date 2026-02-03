@@ -1,9 +1,10 @@
 # Censo RAIA
 
-Descarga del censo publico de animales del Registro Andaluz de Identificacion Animal. El dataset se obtiene desde la API publica de RAIA y se guarda en NDJSON para procesado incremental.
+Descarga del censo publico de animales del Registro Andaluz de Identificacion Animal. El dataset se obtiene desde la API publica de RAIA y se guarda en NDJSON para procesado incremental. Accede al dataset en [Hugging Face](https://huggingface.co/datasets/datania/censo-raia).
 
 ## Recursos
 
+- Dataset: https://huggingface.co/datasets/datania/censo-raia
 - OpenAPI: https://www.juntadeandalucia.es/ssdigitales/festa/download-pro/raia-open-api.json
 - Endpoint: https://api.raia.es/api/censoPublico
 
