@@ -5,6 +5,9 @@ on:
     - cron: "0 0 * * 1"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   export:
     runs-on: ubuntu-latest
@@ -17,6 +20,21 @@ jobs:
 
       - name: Download data
         run: make data
+
+      - name: Build report
+        run: uv run --with polars scripts/build_report.py
+
+      - name: Commit report
+        run: |
+          if git status --porcelain | grep -q "index.html"; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add index.html
+            git commit -m "🤖 Actualiza index.html"
+            git push
+          else
+            echo "No report changes"
+          fi
 
       - name: Upload dataset
         env:

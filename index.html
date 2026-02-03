@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Censo RAIA</title>
+    <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='%232563eb'><circle cx='20' cy='18' r='6'/><circle cx='44' cy='18' r='6'/><circle cx='14' cy='36' r='6'/><circle cx='50' cy='36' r='6'/><path d='M20 46c0-7 6-12 12-12s12 5 12 12c0 8-7 12-12 12s-12-4-12-12z'/></svg>">
+    <style>
+      :root { color-scheme: light }
+      :root { --bg: #f1f5f9 }
+      :root { --panel: #ffffff }
+      :root { --text: #0f172a }
+      :root { --muted: #475569 }
+      :root { --border: #e2e8f0 }
+      :root { --accent: #2563eb }
+      :root { --accent-soft: #dbeafe }
+      * { box-sizing: border-box }
+      body { margin: 0 }
+      body { font-family: "Inter", "Segoe UI", system-ui, sans-serif }
+      body { background: var(--bg) }
+      body { color: var(--text) }
+      body { line-height: 1.5 }
+      main { max-width: 1200px }
+      main { margin: 0 auto }
+      main { padding: 32px 24px 72px }
+      header { display: grid }
+      header { gap: 8px }
+      header { margin-bottom: 32px }
+      h1 { font-size: 34px }
+      h1 { letter-spacing: -0.02em }
+      h1 { margin: 0 }
+      h2 { font-size: 22px }
+      h2 { margin: 0 }
+      h3 { font-size: 14px }
+      h3 { margin: 0 }
+      p { margin: 0 }
+      p { color: var(--muted) }
+      section { margin-bottom: 36px }
+      .stats-grid { display: grid }
+      .stats-grid { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)) }
+      .stats-grid { gap: 16px }
+      .card { background: var(--panel) }
+      .card { border: 1px solid var(--border) }
+      .card { border-radius: 0 }
+      .card { padding: 16px }
+      .card { box-shadow: none }
+      .stat-card { display: grid }
+      .stat-card { gap: 6px }
+      .stat-label { font-size: 12px }
+      .stat-label { text-transform: uppercase }
+      .stat-label { letter-spacing: 0.05em }
+      .stat-label { color: var(--muted) }
+      .stat-value { font-size: 20px }
+      .stat-value { font-weight: 600 }
+      .section-header { display: flex }
+      .section-header { align-items: baseline }
+      .section-header { justify-content: space-between }
+      .section-header { gap: 16px }
+      .section-note { font-size: 14px }
+      .section-note { color: var(--muted) }
+      .chart-card { display: grid }
+      .chart-card { gap: 12px }
+      .chart-title { font-size: 12px }
+      .chart-title { text-transform: uppercase }
+      .chart-title { letter-spacing: 0.04em }
+      .chart-title { color: var(--muted) }
+      .province-title { font-size: 14px }
+      .province-title { font-weight: 600 }
+      .province-title { color: var(--text) }
+      .chart { width: 100% }
+      .chart { min-height: 200px }
+      .chart svg { width: 100% }
+      .chart svg { height: 100% }
+      .legend { display: flex }
+      .legend { flex-wrap: wrap }
+      .legend { gap: 12px }
+      .legend-item { display: flex }
+      .legend-item { align-items: center }
+      .legend-item { gap: 6px }
+      .legend-swatch { width: 12px }
+      .legend-swatch { height: 12px }
+      .legend-swatch { border-radius: 999px }
+      .legend-label { font-size: 13px }
+      .legend-label { color: var(--muted) }
+      .grid { display: grid }
+      .grid { gap: 16px }
+      .grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) }
+      .grid-2x2 { display: grid }
+      .grid-2x2 { gap: 16px }
+      .grid-2x2 { grid-template-columns: repeat(2, minmax(240px, 1fr)) }
+      @media (max-width: 720px) {
+        .grid-2x2 { grid-template-columns: 1fr }
+      }
+      .province-list { display: grid }
+      .province-list { gap: 20px }
+      .axis-label { font-size: 11px }
+      .axis-label { fill: var(--muted) }
+      .axis-year { font-size: 9px }
+      .axis-line { stroke: #cbd5f5 }
+      .axis-line { stroke-width: 1 }
+      .muted-line { stroke: #e2e8f0 }
+      .muted-line { stroke-width: 1 }
+      .chart-title-main { font-size: 14px }
+      .chart-title-main { font-weight: 600 }
+      .footer { font-size: 12px }
+      .footer { color: var(--muted) }
+      .footer { margin-top: 32px }
+      .tooltip { position: fixed }
+      .tooltip { z-index: 20 }
+      .tooltip { padding: 6px 10px }
+      .tooltip { background: #0f172a }
+      .tooltip { color: #ffffff }
+      .tooltip { border-radius: 8px }
+      .tooltip { font-size: 12px }
+      .tooltip { opacity: 0 }
+      .tooltip { transform: translate(-50%, -110%) }
+      .tooltip { pointer-events: none }
+      .tooltip { transition: opacity 0.12s ease }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Censo RAIA</h1>
+        <p>Datos del censo público RAIA.</p>
+      </header>
+
+      <section>
+        <div class="stats-grid">
+          <div class="card stat-card">
+          <div class="stat-label">Animales</div>
+          <div class="stat-value">2.545.490</div>
+        </div>
+<div class="card stat-card">
+          <div class="stat-label">Especies</div>
+          <div class="stat-value">8</div>
+        </div>
+<div class="card stat-card">
+          <div class="stat-label">Razas</div>
+          <div class="stat-value">761</div>
+        </div>
+<div class="card stat-card">
+          <div class="stat-label">Provincias</div>
+          <div class="stat-value">9</div>
+        </div>
+<div class="card stat-card">
+          <div class="stat-label">Municipios</div>
+          <div class="stat-value">2.652</div>
+        </div>
+<div class="card stat-card">
+          <div class="stat-label">Última identificación</div>
+          <div class="stat-value">2026-02-03</div>
+        </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-header">
+          <h2>Especies por sexo</h2>
+          <div class="section-note">Especies principales</div>
+        </div>
+        <div class="card chart-card">
+          <div class="chart" id="species-gender-chart"></div>
+          <div class="legend" id="species-gender-legend"></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-header">
+          <h2>Perros</h2>
+          <div class="section-note">2.128.692 perros y 476 razas</div>
+        </div>
+        <div class="grid-2x2">
+          <div class="card chart-card">
+            <div class="chart-title">Razas principales</div>
+            <div class="chart" id="dog-breeds-chart"></div>
+          </div>
+          <div class="card chart-card">
+            <div class="chart-title">Tamaño</div>
+            <div class="chart" id="dog-size-chart"></div>
+          </div>
+          <div class="card chart-card">
+            <div class="chart-title">Sexo</div>
+            <div class="chart" id="dog-sex-chart"></div>
+          </div>
+          <div class="card chart-card">
+            <div class="chart-title">Colores de capa</div>
+            <div class="chart" id="dog-coats-chart"></div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-header">
+          <h2>Gatos</h2>
+          <div class="section-note">399.935 gatos y 73 razas</div>
+        </div>
+        <div class="grid-2x2">
+          <div class="card chart-card">
+            <div class="chart-title">Razas principales</div>
+            <div class="chart" id="cat-breeds-chart"></div>
+          </div>
+          <div class="card chart-card">
+            <div class="chart-title">Sexo</div>
+            <div class="chart" id="cat-sex-chart"></div>
+          </div>
+          <div class="card chart-card">
+            <div class="chart-title">Tamaño</div>
+            <div class="chart" id="cat-size-chart"></div>
+          </div>
+          <div class="card chart-card">
+            <div class="chart-title">Colores de capa</div>
+            <div class="chart" id="cat-coats-chart"></div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-header">
+          <h2>Altas por provincia</h2>
+          <div class="section-note">Top 3 especies por provincia</div>
+        </div>
+        <div class="province-list" id="province-charts"></div>
+      </section>
+
+      <div class="footer">Fuente RAIA.</div>
+    </main>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+      const DATA = {"generated_at": "2026-02-03", "overall": {"total": 2545490, "species": 8, "provinces": 9, "municipalities": 2652, "breeds": 761, "max_ident_date": "2026-02-03"}, "top_species_gender": {"categories": ["PERRO", "GATO", "HURON", "PSITACIFORME", "OTRAS ESPECIES", "MINIPIG", "OTRAS ESPECIES APP", "PRIMATES"], "series": [{"name": "Hembra", "values": [1118526, 198415, 6326, 803, 765, 216, 66, 19]}, {"name": "Macho", "values": [1009978, 201303, 5968, 1007, 729, 169, 63, 20]}, {"name": "Desconocido", "values": [188, 217, 1, 448, 253, 1, 7, 2]}]}, "dogs": {"total": 2128692, "breeds": 476, "top_breeds": [{"label": "CRUZADO", "value": 482028}, {"label": "PODENCO", "value": 267512}, {"label": "YORKSHIRE TERRIER", "value": 131625}, {"label": "CHIHUAHUA", "value": 97159}, {"label": "GALGO ESPAÑOL", "value": 92361}, {"label": "PASTOR ALEMAN", "value": 75283}, {"label": "MASTIN ESPAÑOL", "value": 75071}, {"label": "RATONERO BODEGUERO ANDALUZ", "value": 67174}, {"label": "EPAGNEUL BRETON", "value": 65901}, {"label": "PERRO DE AGUAS ESPAÑOL", "value": 56474}], "coat_colors": [{"label": "CANELA", "value": 148155}, {"label": "TRICOLOR", "value": 137592}, {"label": "NEGRO Y FUEGO", "value": 110010}, {"label": "BLANCA", "value": 74480}, {"label": "NEGRA", "value": 65401}, {"label": "MARRON", "value": 62858}, {"label": "NEGRO", "value": 46038}, {"label": "CHOCOLATE", "value": 44110}], "sex": [{"label": "Hembra", "value": 1118526}, {"label": "Macho", "value": 1009978}, {"label": "Desconocido", "value": 188}], "size": [{"label": "<2 Kg", "value": 59495}, {"label": "2-5 Kg", "value": 383314}, {"label": "5-10 Kg", "value": 452758}, {"label": "10-20 Kg", "value": 664356}, {"label": "20-40 Kg", "value": 489082}, {"label": ">40 Kg", "value": 78486}, {"label": "Desconocido", "value": 1201}]}, "cats": {"total": 399935, "breeds": 73, "top_breeds": [{"label": "EUROPEO", "value": 284825}, {"label": "CRUZADO", "value": 52372}, {"label": "SIAMES", "value": 18268}, {"label": "PERSA", "value": 12541}, {"label": "SPHYNX", "value": 8291}, {"label": "BRITISH SHORTHAIR", "value": 3512}, {"label": "Desconocida", "value": 2993}, {"label": "AZUL RUSO", "value": 2862}, {"label": "BENGALI", "value": 2664}, {"label": "MAINE COON", "value": 2463}], "coat_colors": [{"label": "TRICOLOR", "value": 28176}, {"label": "NEGRA", "value": 21780}, {"label": "ATIGRADO", "value": 19459}, {"label": "NEGRO", "value": 19435}, {"label": "ATIGRADA", "value": 17258}, {"label": "GRIS", "value": 13878}, {"label": "NARANJA", "value": 10853}, {"label": "BLANCA", "value": 8798}], "sex": [{"label": "Hembra", "value": 198415}, {"label": "Macho", "value": 201303}, {"label": "Desconocido", "value": 217}], "size": [{"label": "<2 Kg", "value": 58}, {"label": "2-5 Kg", "value": 1347}, {"label": "5-10 Kg", "value": 122}, {"label": "10-20 Kg", "value": 192}, {"label": "20-40 Kg", "value": 9}, {"label": ">40 Kg", "value": 0}, {"label": "Desconocido", "value": 398207}]}, "line": {"years": [2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026], "provinces": [{"province": "Málaga", "species": ["PERRO", "GATO", "HURON"], "series": [{"name": "PERRO", "values": [20, 51, 99, 306, 3609, 13602, 16528, 19164, 20413, 22807, 24960, 27978, 28433, 27838, 28433, 30931, 36215, 35323, 34571, 31793, 31728, 2209]}, {"name": "GATO", "values": [6, 13, 27, 46, 533, 1702, 1936, 2166, 2620, 3195, 4007, 4693, 5832, 6472, 7048, 8930, 10963, 10696, 11861, 13158, 17715, 1499]}, {"name": "HURON", "values": [0, 0, 0, 0, 38, 121, 132, 184, 141, 137, 122, 104, 131, 87, 68, 87, 163, 174, 123, 163, 260, 10]}]}, {"province": "Sevilla", "species": ["PERRO", "GATO", "HURON"], "series": [{"name": "PERRO", "values": [29, 48, 106, 248, 3481, 13551, 17096, 19604, 22188, 24484, 26938, 28124, 29328, 28135, 28065, 29699, 35104, 33424, 33215, 30516, 30915, 2319]}, {"name": "GATO", "values": [3, 6, 19, 31, 259, 862, 1091, 1192, 1426, 1812, 2292, 2737, 3099, 3747, 4403, 5726, 7228, 7424, 8233, 9292, 13728, 1152]}, {"name": "HURON", "values": [0, 0, 0, 0, 82, 144, 201, 221, 166, 156, 159, 111, 168, 178, 184, 154, 269, 264, 391, 298, 262, 18]}]}, {"province": "Cádiz", "species": ["PERRO", "GATO", "HURON"], "series": [{"name": "PERRO", "values": [20, 34, 61, 165, 2544, 9103, 11428, 13372, 14627, 16633, 17649, 19233, 20038, 19120, 19297, 20773, 24761, 24055, 23672, 21407, 21221, 1528]}, {"name": "GATO", "values": [1, 3, 12, 24, 259, 838, 1021, 1175, 1328, 1658, 2181, 2768, 3262, 3872, 4212, 5291, 6331, 6605, 7454, 8551, 11450, 822]}, {"name": "HURON", "values": [0, 0, 0, 0, 23, 94, 157, 167, 111, 100, 64, 54, 34, 29, 51, 47, 67, 68, 99, 111, 171, 10]}]}, {"province": "Córdoba", "species": ["PERRO", "GATO", "HURON"], "series": [{"name": "PERRO", "values": [32, 28, 76, 191, 2011, 8939, 10860, 11552, 12043, 12638, 13419, 14847, 15280, 14600, 14658, 15891, 18479, 17915, 18765, 16495, 16101, 1063]}, {"name": "GATO", "values": [0, 1, 5, 2, 93, 254, 271, 347, 375, 429, 643, 866, 888, 1096, 1291, 1780, 2203, 3131, 3549, 4956, 7707, 642]}, {"name": "HURON", "values": [0, 0, 0, 1, 77, 166, 211, 267, 147, 115, 95, 69, 79, 41, 36, 60, 66, 74, 92, 88, 77, 4]}]}, {"province": "Granada", "species": ["PERRO", "GATO", "HURON"], "series": [{"name": "PERRO", "values": [36, 35, 65, 150, 1846, 7622, 8824, 9374, 10002, 11673, 12074, 14099, 14683, 14421, 14337, 15503, 18594, 17125, 18158, 15714, 15870, 1014]}, {"name": "GATO", "values": [0, 2, 4, 11, 87, 348, 470, 485, 639, 939, 988, 1489, 1583, 2014, 2048, 2835, 3449, 3600, 4421, 5814, 8778, 813]}, {"name": "HURON", "values": [0, 0, 0, 0, 23, 30, 31, 70, 51, 43, 41, 30, 39, 42, 43, 95, 86, 149, 157, 111, 89, 7]}]}, {"province": "Jaén", "species": ["PERRO", "GATO", "HURON"], "series": [{"name": "PERRO", "values": [16, 27, 68, 174, 1491, 6388, 7664, 8512, 9394, 9901, 10913, 12211, 12607, 11800, 11356, 11895, 13829, 13401, 14028, 12612, 12826, 831]}, {"name": "GATO", "values": [1, 1, 4, 5, 39, 130, 170, 199, 233, 263, 383, 519, 572, 710, 959, 1197, 1447, 1539, 2077, 3068, 3870, 361]}, {"name": "HURON", "values": [0, 0, 0, 0, 5, 32, 62, 68, 39, 44, 67, 70, 77, 70, 83, 69, 70, 85, 98, 74, 89, 5]}]}, {"province": "Almería", "species": ["PERRO", "GATO", "HURON"], "series": [{"name": "PERRO", "values": [7, 21, 42, 119, 1427, 5226, 6804, 7349, 7722, 8683, 9128, 10409, 10266, 9974, 10212, 11204, 13659, 13069, 13001, 11735, 11551, 767]}, {"name": "GATO", "values": [1, 4, 4, 10, 131, 389, 494, 458, 497, 638, 809, 1147, 1315, 1603, 2057, 2349, 3013, 3530, 3635, 4691, 5740, 467]}, {"name": "HURON", "values": [0, 0, 0, 0, 12, 18, 35, 39, 37, 38, 38, 44, 32, 35, 42, 79, 83, 69, 62, 64, 79, 1]}]}, {"province": "Huelva", "species": ["PERRO", "GATO", "HURON"], "series": [{"name": "PERRO", "values": [12, 16, 27, 63, 1138, 4926, 5983, 6922, 7649, 7708, 8923, 9290, 9771, 9732, 9842, 10302, 12450, 11373, 11647, 10815, 11135, 647]}, {"name": "GATO", "values": [0, 2, 2, 5, 37, 117, 177, 165, 197, 239, 316, 538, 657, 853, 995, 1202, 1790, 1713, 1801, 2046, 3635, 312]}, {"name": "HURON", "values": [0, 0, 0, 0, 5, 27, 27, 32, 13, 15, 25, 8, 10, 17, 1, 14, 27, 22, 20, 27, 42, 8]}]}]}}
+      const formatter = new Intl.NumberFormat("es-ES")
+
+      const genderPalette = {
+        Hembra: "#2563eb",
+        Macho: "#f97316",
+        Desconocido: "#94a3b8"
+      }
+
+      const linePalette = ["#2563eb", "#f97316", "#10b981", "#a855f7"]
+
+      function formatNumber(value) {
+        return formatter.format(value)
+      }
+
+      function truncateLabel(text, max) {
+        if (text.length <= max) {
+          return text
+        }
+        return `${text.slice(0, max - 1)}…`
+      }
+
+      function createSvg(width, height) {
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+        svg.setAttribute("width", width)
+        svg.setAttribute("height", height)
+        svg.setAttribute("viewBox", `0 0 ${width} ${height}`)
+        return svg
+      }
+
+      function addText(svg, x, y, text, className, anchor, rotate) {
+        const element = document.createElementNS("http://www.w3.org/2000/svg", "text")
+        element.setAttribute("x", x)
+        element.setAttribute("y", y)
+        if (className) {
+          element.setAttribute("class", className)
+        }
+        if (anchor) {
+          element.setAttribute("text-anchor", anchor)
+        }
+        if (rotate) {
+          element.setAttribute("transform", `rotate(${rotate}, ${x}, ${y})`)
+        }
+        element.textContent = text
+        svg.appendChild(element)
+      }
+
+      function addLine(svg, x1, y1, x2, y2, className) {
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line")
+        line.setAttribute("x1", x1)
+        line.setAttribute("y1", y1)
+        line.setAttribute("x2", x2)
+        line.setAttribute("y2", y2)
+        if (className) {
+          line.setAttribute("class", className)
+        }
+        svg.appendChild(line)
+      }
+
+      function showTooltip(event, text) {
+        const tooltip = document.getElementById("tooltip")
+        tooltip.textContent = text
+        tooltip.style.opacity = "1"
+        moveTooltip(event)
+      }
+
+      function moveTooltip(event) {
+        const tooltip = document.getElementById("tooltip")
+        tooltip.style.left = `${event.clientX}px`
+        tooltip.style.top = `${event.clientY - 12}px`
+      }
+
+      function hideTooltip() {
+        const tooltip = document.getElementById("tooltip")
+        tooltip.style.opacity = "0"
+      }
+
+      function bindTooltip(element, text) {
+        element.addEventListener("mouseenter", (event) => {
+          showTooltip(event, text)
+        })
+        element.addEventListener("mousemove", (event) => {
+          moveTooltip(event)
+        })
+        element.addEventListener("mouseleave", () => {
+          hideTooltip()
+        })
+      }
+
+      function renderLegend(container, items, palette) {
+        container.innerHTML = ""
+        items.forEach((item) => {
+          const legendItem = document.createElement("div")
+          legendItem.className = "legend-item"
+          const swatch = document.createElement("span")
+          swatch.className = "legend-swatch"
+          swatch.style.background = palette[item]
+          const label = document.createElement("span")
+          label.className = "legend-label"
+          label.textContent = item
+          legendItem.appendChild(swatch)
+          legendItem.appendChild(label)
+          container.appendChild(legendItem)
+        })
+      }
+
+      function renderStackedBarChart(container, data) {
+        const width = Math.max(container.clientWidth, 320)
+        const margin = { top: 18, right: 20, bottom: 24, left: 190 }
+        const barHeight = 26
+        const gap = 8
+        const height =
+          margin.top +
+          margin.bottom +
+          data.categories.length * barHeight +
+          (data.categories.length - 1) * gap
+        const chartWidth = width - margin.left - margin.right
+        const chartHeight = height - margin.top - margin.bottom
+        const totals = data.categories.map((_, index) =>
+          data.series.reduce((sum, series) => sum + series.values[index], 0)
+        )
+        const maxValue = Math.max(...totals, 1)
+        const svg = createSvg(width, height)
+
+        container.innerHTML = ""
+        container.style.height = `${height}px`
+        container.appendChild(svg)
+
+        const ticks = 4
+        const tickValues = Array.from({ length: ticks }, (_, index) =>
+          Math.round((maxValue / (ticks - 1)) * index)
+        )
+        tickValues.forEach((value) => {
+          const x = margin.left + (value / maxValue) * chartWidth
+          addLine(svg, x, margin.top, x, height - margin.bottom, "muted-line")
+          addText(svg, x, height - 6, formatNumber(value), "axis-label", "middle")
+        })
+
+        data.categories.forEach((category, index) => {
+          const y = margin.top + index * (barHeight + gap)
+          addText(
+            svg,
+            margin.left - 8,
+            y + barHeight / 2 + 4,
+            truncateLabel(category, 22),
+            "axis-label",
+            "end"
+          )
+          let x = margin.left
+          data.series.forEach((series) => {
+            const value = series.values[index]
+            const widthValue = (value / maxValue) * chartWidth
+            if (widthValue > 0) {
+              const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect")
+              rect.setAttribute("x", x)
+              rect.setAttribute("y", y)
+              rect.setAttribute("width", widthValue)
+              rect.setAttribute("height", barHeight)
+              rect.setAttribute("fill", genderPalette[series.name])
+              rect.setAttribute("rx", 6)
+              rect.setAttribute("ry", 6)
+              svg.appendChild(rect)
+              bindTooltip(
+                rect,
+                `${category} · ${series.name}: ${formatNumber(value)}`
+              )
+              x += widthValue
+            }
+          })
+        })
+      }
+
+      function renderHorizontalBarChart(container, items, color) {
+        const width = Math.max(container.clientWidth, 320)
+        const margin = { top: 12, right: 20, bottom: 18, left: 220 }
+        const barHeight = 24
+        const gap = 8
+        const height =
+          margin.top +
+          margin.bottom +
+          items.length * barHeight +
+          (items.length - 1) * gap
+        const chartWidth = width - margin.left - margin.right
+        const chartHeight = height - margin.top - margin.bottom
+        const maxValue = Math.max(...items.map((item) => item.value), 1)
+        const svg = createSvg(width, height)
+
+        container.innerHTML = ""
+        container.style.height = `${height}px`
+        container.appendChild(svg)
+
+        items.forEach((item, index) => {
+          const y = margin.top + index * (barHeight + gap)
+          addText(
+            svg,
+            margin.left - 8,
+            y + barHeight / 2 + 4,
+            truncateLabel(item.label, 24),
+            "axis-label",
+            "end"
+          )
+          const barWidth = (item.value / maxValue) * chartWidth
+          const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect")
+          rect.setAttribute("x", margin.left)
+          rect.setAttribute("y", y)
+          rect.setAttribute("width", barWidth)
+          rect.setAttribute("height", barHeight)
+          rect.setAttribute("fill", color)
+          rect.setAttribute("rx", 6)
+          rect.setAttribute("ry", 6)
+          svg.appendChild(rect)
+          bindTooltip(rect, `${item.label}: ${formatNumber(item.value)}`)
+        })
+      }
+
+      function renderLineChart(container, chart, palette) {
+        const width = Math.max(container.clientWidth, 320)
+        const height = 240
+        const margin = { top: 16, right: 16, bottom: 48, left: 36 }
+        const chartWidth = width - margin.left - margin.right
+        const chartHeight = height - margin.top - margin.bottom
+        const maxValue = Math.max(
+          ...chart.series.flatMap((series) => series.values),
+          1
+        )
+        const svg = createSvg(width, height)
+
+        container.innerHTML = ""
+        container.style.height = `${height}px`
+        container.appendChild(svg)
+
+        addLine(
+          svg,
+          margin.left,
+          height - margin.bottom,
+          width - margin.right,
+          height - margin.bottom,
+          "axis-line"
+        )
+        addLine(
+          svg,
+          margin.left,
+          margin.top,
+          margin.left,
+          height - margin.bottom,
+          "axis-line"
+        )
+
+        const xScale = (index) =>
+          margin.left + (index / (chart.years.length - 1)) * chartWidth
+        const yScale = (value) =>
+          height - margin.bottom - (value / maxValue) * chartHeight
+
+        const ticks = 4
+        const tickValues = Array.from({ length: ticks }, (_, index) =>
+          Math.round((maxValue / (ticks - 1)) * index)
+        )
+        tickValues.forEach((value) => {
+          const y = yScale(value)
+          addLine(svg, margin.left, y, width - margin.right, y, "muted-line")
+          addText(svg, margin.left - 6, y + 4, formatNumber(value), "axis-label", "end")
+        })
+
+        chart.years.forEach((year, index) => {
+          const x = xScale(index)
+          addText(svg, x, height - 6, year, "axis-label axis-year", "middle", -45)
+        })
+
+        chart.series.forEach((series) => {
+          const color = palette[series.name]
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path")
+          const d = series.values
+            .map((value, index) => {
+              const x = xScale(index)
+              const y = yScale(value)
+              return `${index === 0 ? "M" : "L"}${x},${y}`
+            })
+            .join(" ")
+          path.setAttribute("d", d)
+          path.setAttribute("fill", "none")
+          path.setAttribute("stroke", color)
+          path.setAttribute("stroke-width", 2)
+          svg.appendChild(path)
+
+          series.values.forEach((value, index) => {
+            const x = xScale(index)
+            const y = yScale(value)
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle")
+            circle.setAttribute("cx", x)
+            circle.setAttribute("cy", y)
+            circle.setAttribute("r", 2.5)
+            circle.setAttribute("fill", color)
+            circle.setAttribute("opacity", 0.7)
+            circle.setAttribute("pointer-events", "all")
+            circle.style.cursor = "pointer"
+            svg.appendChild(circle)
+            circle.addEventListener("mouseenter", (event) => {
+              circle.setAttribute("opacity", 1)
+              circle.setAttribute("r", 4)
+              showTooltip(
+                event,
+                `${series.name} · ${chart.years[index]}: ${formatNumber(value)}`
+              )
+            })
+            circle.addEventListener("mousemove", (event) => {
+              moveTooltip(event)
+            })
+            circle.addEventListener("mouseleave", () => {
+              circle.setAttribute("opacity", 0.7)
+              circle.setAttribute("r", 2.5)
+              hideTooltip()
+            })
+          })
+        })
+      }
+
+      function renderLineCharts(container, data) {
+        container.innerHTML = ""
+        data.provinces.forEach((province) => {
+          const card = document.createElement("div")
+          card.className = "card chart-card"
+          const title = document.createElement("div")
+          title.className = "province-title"
+          title.textContent = province.province
+          const legend = document.createElement("div")
+          legend.className = "legend"
+          const chartContainer = document.createElement("div")
+          chartContainer.className = "chart"
+          card.appendChild(title)
+          card.appendChild(legend)
+          card.appendChild(chartContainer)
+          container.appendChild(card)
+          const palette = Object.fromEntries(
+            province.species.map((species, index) => [species, linePalette[index % linePalette.length]])
+          )
+          renderLegend(legend, province.species, palette)
+          renderLineChart(
+            chartContainer,
+            { years: data.years, series: province.series },
+            palette
+          )
+        })
+      }
+
+      function renderAll() {
+        const genderChart = document.getElementById("species-gender-chart")
+        renderStackedBarChart(genderChart, DATA.top_species_gender)
+        renderLegend(
+          document.getElementById("species-gender-legend"),
+          DATA.top_species_gender.series.map((series) => series.name),
+          genderPalette
+        )
+        renderHorizontalBarChart(
+          document.getElementById("dog-breeds-chart"),
+          DATA.dogs.top_breeds,
+          "#2563eb"
+        )
+        renderHorizontalBarChart(
+          document.getElementById("dog-size-chart"),
+          DATA.dogs.size,
+          "#0ea5e9"
+        )
+        renderHorizontalBarChart(
+          document.getElementById("dog-sex-chart"),
+          DATA.dogs.sex,
+          "#f97316"
+        )
+        renderHorizontalBarChart(
+          document.getElementById("dog-coats-chart"),
+          DATA.dogs.coat_colors,
+          "#64748b"
+        )
+        renderHorizontalBarChart(
+          document.getElementById("cat-breeds-chart"),
+          DATA.cats.top_breeds,
+          "#10b981"
+        )
+        renderHorizontalBarChart(
+          document.getElementById("cat-sex-chart"),
+          DATA.cats.sex,
+          "#f97316"
+        )
+        renderHorizontalBarChart(
+          document.getElementById("cat-size-chart"),
+          DATA.cats.size,
+          "#0ea5e9"
+        )
+        renderHorizontalBarChart(
+          document.getElementById("cat-coats-chart"),
+          DATA.cats.coat_colors,
+          "#64748b"
+        )
+        renderLineCharts(document.getElementById("province-charts"), DATA.line)
+      }
+
+      window.addEventListener("load", () => {
+        renderAll()
+      })
+
+      window.addEventListener("resize", () => {
+        renderAll()
+      })
+    </script>
+  </body>
+</html>
