@@ -41,14 +41,6 @@ el endpoint vigente y los requisitos de acceso automatizado desde GitHub Actions
 No se deben probar credenciales arbitrarias ni eludir controles de acceso.
 Cuando RAIA confirme el acceso, validar con una unica ejecucion controlada.
 
-### Pruebas
-
-```bash
-make test
-```
-
-Las pruebas usan respuestas sinteticas y no consultan RAIA ni publican datos.
-
 ## Estructura de datos
 
 ```
