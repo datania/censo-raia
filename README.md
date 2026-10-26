@@ -15,6 +15,40 @@ make setup
 make data
 ```
 
+La descarga verifica TLS y solo sustituye el fichero anterior cuando ha recibido
+un array JSON completo, no vacio y con registros de animales. Los fallos HTTP,
+las respuestas invalidas y las descargas interrumpidas terminan con error y
+conservan cualquier fichero anterior. No hay reintentos automaticos.
+
+### Incidencia del proveedor (26 de octubre de 2026)
+
+La [ejecucion de GitHub Actions 40397419484](https://github.com/datania/censo-raia/actions/runs/40397419484)
+recibio HTTP 403 al solicitar el censo. El informe y la publicacion se omitieron.
+Dos comprobaciones locales acotadas posteriores recibieron HTTP 500; la segunda
+confirmo un mensaje generico `Server Error`, sin leer registros del censo.
+La conexion local verifico correctamente el certificado TLS.
+
+La [especificacion oficial](https://www.juntadeandalucia.es/ssdigitales/festa/download-pro/raia-open-api.json)
+sigue indicando `GET https://api.raia.es/api/censoPublico`, sin filtros obligatorios
+ni autenticacion documentada. No se ha identificado un endpoint sustituto ni una
+credencial requerida. La diferencia entre 403 y 500 no permite determinar si hay
+una restriccion de acceso o una averia del proveedor. Estas protecciones del
+descargador **no restablecen el acceso**.
+
+Para desbloquearlo, solicitar al contacto tecnico de la especificacion,
+`informatica@colegiosveterinarios.es`, que confirme la disponibilidad del servicio,
+el endpoint vigente y los requisitos de acceso automatizado desde GitHub Actions.
+No se deben probar credenciales arbitrarias ni eludir controles de acceso.
+Cuando RAIA confirme el acceso, validar con una unica ejecucion controlada.
+
+### Pruebas
+
+```bash
+make test
+```
+
+Las pruebas usan respuestas sinteticas y no consultan RAIA ni publican datos.
+
 ## Estructura de datos
 
 ```
