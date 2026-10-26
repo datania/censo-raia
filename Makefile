@@ -1,9 +1,10 @@
-.PHONY: setup data upload clean help
+.PHONY: setup data test upload clean help
 
 help:
 	@echo "Available targets:"
 	@echo "  setup  - Install dependencies using uv"
 	@echo "  data   - Download RAIA census data"
+	@echo "  test   - Run offline download tests"
 	@echo "  upload - Upload dataset to HuggingFace"
 	@echo "  clean  - Remove downloaded files"
 	@echo "  help   - Show this help message"
@@ -16,6 +17,9 @@ setup: .uv
 
 data: .uv
 	uv run censo_raia.py
+
+test: .uv
+	uv run --locked python -m unittest discover -s tests -v
 
 clean:
 	rm -rf data/
